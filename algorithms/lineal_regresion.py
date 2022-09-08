@@ -10,6 +10,14 @@ class algorithm:
 
     def prepare_dataset(self, dataset):
         """
+        Prepara el dataset para su utilización. Aniade la columna X0 al cojunto de datos
+        
+        Parametros
+            dataset: pandas
+                Dataset a preparar. Debe tener 2 columnas, una para lo valores de 'x' y otra para los de 'y'
+                
+        Return
+            Devuelve una lista de dos listas([X, Y])). En la primera se encuentra el conjunto de valores de entrada actualizados y en la segunda la lista de valores de salida
         """
         if len(dataset.columns) == 2:
             columns = dataset.columns
@@ -24,10 +32,22 @@ class algorithm:
 
             return X, Y
         else:
-            raise Exception("The dataset has more than 2 parameters")
+            raise Exception("The dataset has more than 2 columns")
 
     def calculate_theta(self, X, Y, show):
         """
+        Nos permite calcular los valores de theta para construir la recta de regresion
+        
+        Parametros
+            X: numpy
+                Matriz de valores de entrada. Deben haber sido preparados con la funcion 'prepare_dataset()' previamente
+            Y: numpy
+                Lista de valores de entrada
+            show: boolean
+                Si es True nos mostrara todos los calculos realizados para obtener los valores de theta
+                
+        Return
+            Devuelve una lista con los dos valores de theta
         """
         if show:
             print("-------------- Formulas --------------")
@@ -68,7 +88,7 @@ class algorithm:
             print(f"           [-b a]   [{-1*A[0][1]} {A[0][0]}]")
             print(f"")
             print(f"inv(A) = 1/{A_det} * [{A[1][1]} {-1*A[1][0]}] = [{A_inv[0][0]} {A_inv[0][1]}]")
-            print(f"                 [{-1*A[0][1]} {A[0][0]}]   [{A_inv[1][0]} {A_inv[1][1]}]")
+            print(f"                  [{-1*A[0][1]} {A[0][0]}]    [{A_inv[1][0]} {A_inv[1][1]}]")
             print(f"----------------------------")
 
         # B = A_inv * X_t
@@ -84,14 +104,29 @@ class algorithm:
         theta = np.matmul(B, Y)
         theta = np.round(theta, 4)
         if show:
-
-            print(f"Θ = B * Y = {theta}")
+            print(f"Θ = B * Y")
+            print(f"")
+            print(f"Θ = {theta}")
 
         self.__theta = theta.copy()
         return np.round(theta, 4)
 
     def lost_function(self, X, Y, theta, show):
         """
+        Calcula el valor de la funcion de costo
+        
+        Parametros
+            X: numpy
+                Matriz de valores de entrada. Deben haber sido preparados con la funcion 'prepare_dataset()' previamente
+            Y: numpy
+                Lista de valores de entrada
+            theta: list
+                Lista de los dos valores de theta
+            show: boolean
+                Si es True nos mostrara todos los calculos realizados para obtener los valores de theta
+                
+        Return
+            Valor de la funcion de costo
         """
 
         if show:
@@ -121,14 +156,29 @@ class algorithm:
                 if i == 0:
                     print(f"{amount_list[i]}", end='')
                 else:
-                    print(f"+ {amount_list[i]}", end='')
+                    print(f" + {amount_list[i]}", end='')
 
             print(f"] = {amount}")
+            print("")
+            print(f"J(Θ) = {amount}")
 
         return amount
 
     def gradient_descent(self, X, Y, theta, alpha, iterations, show):
         """
+        Calcula la estimacion de los valores de theta mediante el algoritmo de descenso por gradiente
+        
+        Parametros
+            X: numpy
+                Matriz de valores de entrada. Deben haber sido preparados con la funcion 'prepare_dataset()' previamente
+            Y: numpy
+                Lista de valores de entrada
+            theta: list
+                Lista de los dos valores de theta iniciales
+            iterations: int
+                Numero de veces que se aplicara el descenso por gradiente sobre los valores de theta
+            show: boolean
+                Si es True nos mostrara todos los calculos realizados para obtener los valores de theta
         """
         if show:
             print("-------------- Formulas --------------")
@@ -176,12 +226,17 @@ class algorithm:
             theta_aux = np.round(theta_prima.copy(), 4)
 
             if show:
-                print(f"θ0, θ1 = [{theta_prima[0]}, {theta_prima[1]}]")
+                print(f"[θ0, θ1] = [{theta_prima[0]}, {theta_prima[1]}]")
                 print("")
         return theta_prima
 
     def represent_dataset(self, dataset):
         """
+        Representa los datos de un dataset
+        
+        Parametros
+            dataset: pandas
+                Dataset a representar. Debe tener 2 columnas, una para lo valores de 'x' y otra para los de 'y'
         """
         X, Y = self.prepare_dataset(dataset)
         X = X[:, 1]
@@ -202,6 +257,13 @@ class algorithm:
 
     def represent_regresion(self, dataset, theta):
         """
+        Representa los datos de un dataset y una recta de regresion
+        
+        Parametros
+            dataset: pandas
+                Dataset a representar. Debe tener 2 columnas, una para lo valores de 'x' y otra para los de 'y'
+            theta: list
+                Lista de los dos valores de theta utilizados para generar la recta de regresion
         """
         X, Y = self.prepare_dataset(dataset)
         columns = dataset.columns
@@ -210,6 +272,17 @@ class algorithm:
 
     def __represent(self, X, Y, theta, columns_names):
         """
+        Representa un conjunto de datos y su recta de regresion
+        
+        Parametros
+            X: numpy
+                Matriz de valores de entrada. Deben haber sido preparados con la funcion 'prepare_dataset()' previamente
+            Y: numpy
+                Lista de valores de entrada
+            theta: list
+                Lista de los dos valores de theta iniciales
+            columns_names: list
+                Lista de dos valores. Contiene el nombre del tipo de datos de 'x' y de 'y'
         """
         # Preparamos los datos
         aux_X = X[:, 1].copy()
@@ -226,7 +299,7 @@ class algorithm:
 
         line_y = []
         for x in line_x:
-            line_y += [self.__y(theta, x)]
+            line_y += [self.y(theta, x, False)]
 
         # Representamos
         ax = plt.figure()
@@ -249,11 +322,29 @@ class algorithm:
     # ==============================================================================
     def __h0(self, X_i, theta):
         """
+        Calcula la hipotesis resultante para los valores de X_i y los de theta
+        
+        Parametros
+            X_i: list
+                Lista de los valores de X del ejemplo i
+            theta: list
+                Valores de theta
+                
+        Return
+            Resultado de la hipotesis
         """
         return round(np.matmul(X_i, theta), 4)
 
     def __cofactor_matrix(self, A):
         """
+        Calcula la matriz adjunta de A
+        
+        Parametros
+            A: numpy
+                Matriz a la cual calcular su adjunta
+                
+        Return 
+            Devuelve la matriz adjunta
         """
         # Adj(A) = transpose(inv(A)) * det(A)
         cofactor = None  # Adjunta
@@ -262,17 +353,37 @@ class algorithm:
         # return cofactor matrix of the given matrix
         return cofactor
 
-    def __y(self, theta, x):
+    def y(self, theta, x, show):
         """
+        Devuelve el valor de salida de una recta de regresion. y(x) = theta[0] + theta[1] * x
+        
+        Parametros
+            theta: list
+                Lista de dos valores de theta empleados en la funcion de regresion
+            x: float
+                Valor de entrada
+                
+        Return
+            Valor de obtenido por la funcion
         """
         y = theta[0] + theta[1]*x
-        return y
+        if show:
+            print(f"y({x}) = {theta[0]} + {theta[1]} * {x} = {round(y, 4)}")
+        return round(y, 4)
 
     # ==============================================================================
     # ============================= METODOS AUXILIARES =============================
     # ==============================================================================
     def __add_X0(self, X):
         """
+        Aniade una columna de '1' al conjunto de datos de X
+        
+        Parametros
+            X: numpy
+                Lista de valores
+        
+        Return
+            Devuelve el mismo conjunto de datos pero con una columna de '1' al principio de la lista
         """
         # Aniadimos una fila de unos
         X0 = np.ones(len(X)).reshape((len(X), 1))
